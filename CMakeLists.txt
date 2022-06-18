@@ -30,7 +30,7 @@ endif()
 
 project(twin_stick_cpp)
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/components.hpp)
 target_link_libraries(${PROJECT_NAME} raylib)
 
 # Web Configurations
