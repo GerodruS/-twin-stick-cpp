@@ -17,9 +17,9 @@ namespace Component {
         {
         }
 
-        Transform(Vector2 position, float rotation)
-                : position(position)
-                , rotation(rotation)
+        Transform(Vector2 position_, float rotation_)
+                : position(position_)
+                , rotation(rotation_)
         {
         }
     };
@@ -32,8 +32,8 @@ namespace Component {
         {
         }
 
-        Velocity(Vector2 vector)
-                : vector(vector)
+        explicit Velocity(Vector2 vector_)
+                : vector(vector_)
         {
         }
     };
@@ -46,8 +46,8 @@ namespace Component {
         {
         }
 
-        AngularVelocity(float value)
-                : value(value)
+        explicit AngularVelocity(float value_)
+                : value(value_)
         {
         }
     };
@@ -63,10 +63,10 @@ namespace Component {
         Sprite()
                 = delete;
 
-        Sprite(Color color, Texture2D texture, Vector2 size)
-                : color(color)
-                , texture(texture)
-                , size(size)
+        Sprite(Color color_, Texture2D texture_, Vector2 size_)
+                : color(color_)
+                , texture(texture_)
+                , size(size_)
         {
         }
     };
@@ -79,8 +79,8 @@ namespace Component {
         {
         }
 
-        Collider(float radius)
-                : radius(radius)
+        explicit Collider(float radius_)
+                : radius(radius_)
         {
         }
     };
