@@ -38,6 +38,8 @@ add_executable(${PROJECT_NAME}
         src/game/game.cpp
         src/game/game.hpp
         src/utils.hpp
+        src/ecs/entity.hpp
+        src/ecs/world.hpp
         )
 target_link_libraries(${PROJECT_NAME} raylib)
 
