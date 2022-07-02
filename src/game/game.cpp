@@ -64,6 +64,11 @@ void Game::init()
         const auto& tr = std::get<1>(i);
         const auto& ve = std::get<2>(i);
     }
+    for (auto i : _world.eachN<Component::PlayerController, Component::Transform, Component::Velocity, Component::Sprite>()) {
+        const auto& pc = std::get<0>(i);
+        const auto& tr = std::get<1>(i);
+        const auto& ve = std::get<2>(i);
+    }
     //
 }
 

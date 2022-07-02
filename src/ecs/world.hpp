@@ -125,77 +125,6 @@ public:
         return index;
     }
 
-    /*
-    template <typename ... Components>
-    struct Iterator {
-    public:
-        Iterator(World& world_)
-            : _world(world_)
-            , _indices()
-        {
-            std::fill(std::begin(_indices), std::end(_indices), 0);
-        }
-
-        bool CanStep() {
-            bool can_step = true;
-            for (auto i : _indices) {
-                can_step = can_step && i < _world.template components<>();
-            }
-            return can_step;
-        }
-
-        void Process() {
-
-        }
-
-        void PostProcess() {
-
-        }
-
-    private:
-        World& _world;
-        std::array<std::size_t, sizeof...(Components)> _indices;
-
-    };
-    */
-
-//    template <typename ... Components>
-//    void for_each() {
-//        std::array<std::size_t, sizeof...(Components)> indices;
-//        std::fill(std::begin(indices), std::end(indices), 0);
-//        for_each<sizeof...(Components), Components ...>();
-//    }
-//
-//    template <size_t Depth, typename ... Components>
-//    void for_each() {
-////        std::array<std::size_t, sizeof...(Components)> indices;
-////        std::fill(std::begin(indices), std::end(indices), 0);
-////        const std::size_t depth = sizeof...(Components);
-////        for_each<Components>();
-//    }
-//
-//    template <typename ... Components>
-//    void for_each<0>() {
-////        ComponentMask mask;
-////        mask.set(get_index<C>());
-////        return mask;
-//    }
-
-//    template<typename C>
-//    struct EntityWithComponent {
-//        struct Iterator
-//        {
-//            using iterator_category = std::bidirectional_iterator_tag;
-//            using difference_type   = std::ptrdiff_t;
-//            using value_type        = C;
-//            using pointer           = C*;  // or also value_type*
-//            using reference         = C&;  // or also value_type&
-//        };
-//
-//    private:
-//        World& _world;
-//    };
-
     template <typename C>
     class iterator {
     public:
@@ -484,5 +413,138 @@ public:
     template <typename C0, typename C1, typename C2>
     auto each3() {
         return iterator3_factory<C0, C1, C2>(*this);
+    }
+
+    template <typename... Cs>
+    class iteratorN {
+    public:
+        using self_type = iteratorN;
+        using iterator_category = std::forward_iterator_tag;
+        using difference_type = int;
+        using value_type = std::tuple<Cs ...>;
+        using reference = std::tuple<Cs& ...>;
+        using pointer = std::tuple<Cs* ...>;
+        using components_iterators = std::tuple<typename std::vector<Cs>::iterator ...>;
+
+        static self_type create_begin(World& world) {
+            constexpr auto count = sizeof...(Cs);
+
+            auto components_i = std::make_tuple(world.components<Cs>().begin() ...);
+
+            for (auto entity_i = world.entities.begin(); entity_i != world.entities.end(); ++entity_i) {
+                std::array<bool, count> contains {(*entity_i)[get_index<Cs>()] ...};
+
+                if (std::all_of(contains.cbegin(),
+                                contains.cend(),
+                                [](auto elem){ return elem; })) {
+                    return iteratorN(
+                            world,
+                            entity_i,
+                            components_i);
+                }
+
+                components_i = std::make_tuple(std::get<typename std::vector<Cs>::iterator>(components_i) + static_cast<int>(contains[Index<Cs, value_type>::value]) ...);
+            }
+            return create_end(world);
+        }
+
+        static self_type create_end(World& world) {
+            return iteratorN(
+                    world,
+                    world.entities.end(),
+                    components_iterators(world.components<Cs>().end() ...)
+            );
+        }
+
+    public:
+        iteratorN(
+                World& world,
+                typename std::vector<ComponentMask>::iterator entity_i,
+                components_iterators component_i
+        )
+                : _world(world)
+                , _entity_i(entity_i)
+                , _component_i(component_i)
+        {
+        }
+
+        self_type operator++() {
+            step_forward();
+            return *this;
+        }
+
+        self_type operator++(int n) {
+            step_forward(n);
+            return *this;
+        }
+
+        reference operator*() { return reference(*(std::get<typename std::vector<Cs>::iterator>(_component_i)) ...); }
+        pointer operator->() { return pointer(&std::get<typename std::vector<Cs>::iterator>(_component_i).operator->() ...); }
+        bool operator==(const self_type &rhs) const noexcept { return  equal(rhs); }
+        bool operator!=(const self_type &rhs) const noexcept { return !equal(rhs); }
+
+    private:
+        World &_world;
+        typename std::vector<ComponentMask>::iterator _entity_i;
+        components_iterators _component_i;
+
+        void step_forward() {
+            if (_entity_i == _world.entities.end()) return;
+
+            constexpr auto count = sizeof...(Cs);
+            for (++_entity_i; _entity_i != _world.entities.end(); ++_entity_i) {
+                std::array<bool, count> contains { (*_entity_i)[get_index<Cs>()] ... };
+
+                _component_i = std::make_tuple(std::get<typename std::vector<Cs>::iterator>(_component_i) + static_cast<int>(contains[Index<Cs, value_type>::value]) ...);
+
+                if (std::all_of(contains.cbegin(),
+                                contains.cend(),
+                                [](auto elem){ return elem; })) {
+                    return;
+                }
+
+            }
+
+            // _entity_i = _world.entities.end();
+            _component_i = std::make_tuple(_world.components<Cs>().end() ...);
+        }
+
+        void step_forward(int n) {
+            for (; 0 < n; --n) {
+                step_forward();
+            }
+        }
+
+        bool equal(const self_type &rhs) const noexcept {
+            return &_world == &(rhs._world)
+                   && _entity_i == rhs._entity_i
+                   && _component_i == rhs._component_i
+                   ;
+        }
+    };
+
+    template <typename... Cs>
+    class IteratorN_factory {
+    public:
+        IteratorN_factory(World& world)
+                : _world(world)
+        {
+        }
+
+        iteratorN<Cs ...> begin() {
+            return iteratorN<Cs ...>::create_begin(_world);
+        }
+
+        iteratorN<Cs ...> end() {
+            return iteratorN<Cs ...>::create_end(_world);
+        }
+
+    private:
+        World &_world;
+    };
+
+    template<typename... Cs>
+    auto eachN() {
+        return IteratorN_factory<Cs ...>(*this);
     }
 };
