@@ -68,8 +68,8 @@ public:
 
     template <typename C>
     static void CopyAndClear(CustomWorld& from_world, CustomWorld& to_world) {
-        auto& from_container = from_world.template get_components<C>();
-        auto& to_container = to_world.template get_components<C>();
+        auto& from_container = from_world.template components<C>();
+        auto& to_container = to_world.template components<C>();
         to_container.insert(std::end(to_container), std::begin(from_container), std::end(from_container));
         from_container.clear();
     }
