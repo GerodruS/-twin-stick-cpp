@@ -19,7 +19,10 @@ private:
             Component::Transform,
             Component::Velocity,
             Component::AngularVelocity,
-            Component::Sprite
+            Component::Sprite,
+            Component::Bullet,
+            Component::DestroyWhenOffScreen,
+            Component::Collider
             >;
 
 public:
@@ -41,9 +44,14 @@ public:
 //        return _world.AddEntity();
 //    }
     // 1.2. delayed
-    void AddEntityDelayed()
+    EntityId AddEntityDelayed()
     {
-        _world_another.add_entity();
+        return _world_another.add_entity();
+    }
+    template <typename C, typename ... Args>
+    void AddComponentDelayed(EntityId id, Args && ... args)
+    {
+        _world_another.add_component<C, Args ...>(id, std::forward<Args>(args) ...);
     }
     void ProcessDelayedOperations()
     {
@@ -74,10 +82,14 @@ public:
         from_container.clear();
     }
 
+    Texture get_texture(size_t index) const;
+
 private:
     CustomWorld _world;
     CustomWorld _world_another;
 
     System::spawn_bullets _spawn_bullets;
     std::vector<Texture2D> _textures;
+
+    void add_texture(const char* const file_name);
 };

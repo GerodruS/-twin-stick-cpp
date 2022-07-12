@@ -7,6 +7,8 @@
 #include "raylib.h"
 #include "components.hpp"
 
+class Game;
+
 namespace System {
     void control(
             Component::Transform &transform,
@@ -34,6 +36,7 @@ namespace System {
         explicit spawn_bullets(float delay);
 
         void operator()(
+                Game& game,
                 const Component::Transform &transform,
                 const Component::PlayerController &_ // filter
                 // delta_time

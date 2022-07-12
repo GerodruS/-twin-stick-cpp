@@ -88,6 +88,18 @@ namespace Component {
     struct DestroyWhenOffScreen {
         float outer_bounds_radius;
         float delay;
+
+        DestroyWhenOffScreen()
+                : outer_bounds_radius(0.0f)
+                , delay(0.0f)
+        {
+        }
+
+        explicit DestroyWhenOffScreen(float outer_bounds_radius_, float delay_)
+                : outer_bounds_radius(outer_bounds_radius_)
+                , delay(delay_)
+        {
+        }
     };
 
     struct Bullet {

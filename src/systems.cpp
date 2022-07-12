@@ -3,6 +3,7 @@
 //
 
 #include "systems.hpp"
+#include "game/game.hpp"
 #include "raymath.h"
 #include "utils.hpp"
 
@@ -59,6 +60,7 @@ namespace System {
     }
 
     void spawn_bullets::operator()(
+            Game& game,
             const Component::Transform &transform,
             const Component::PlayerController &_ // filter
             // delta_time
@@ -67,22 +69,17 @@ namespace System {
         if (0.0f < delay) {
             delay -= delta_time;
         } else if (IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            Component::Transform bullet_transform { transform };
-            Component::Velocity bullet_velocity { };
-            Texture2D sprite_texture { };
+            const Vector2 velocity = Vector2Rotate(Vector2 { 0.0f, 1.0f }, transform.rotation);
             const float bullet_size = 10.0f;
             const float bullet_destroy_delay = 1.0f;
 
-            /*
-            CreateEntity()
-                .Add(Component::Bullet { })
-                .Add(bullet_transform)
-                .Add(bullet_velocity)
-                .Add(Component::Sprite { WHITE, sprite_texture, Vector2 { bullet_size, bullet_size } })
-                .Add(Component::DestroyWhenOffScreen { bullet_size, bullet_destroy_delay })
-                .Add(Component::Collider { bullet_size / 2.0f })
-                ;
-            */
+            const auto entityId = game.AddEntityDelayed();
+            game.AddComponentDelayed<Component::Bullet>(entityId);
+            game.AddComponentDelayed<Component::Transform>(entityId, transform.position, transform.rotation);
+            game.AddComponentDelayed<Component::Velocity>(entityId, velocity);
+            game.AddComponentDelayed<Component::Sprite>(entityId, WHITE, game.get_texture(1), Vector2 {bullet_size, bullet_size });
+            game.AddComponentDelayed<Component::DestroyWhenOffScreen>(entityId, bullet_size, bullet_destroy_delay);
+            game.AddComponentDelayed<Component::Collider>(entityId, bullet_size / 2.0f);
         }
         /*
         if 0.0 < *delay {
