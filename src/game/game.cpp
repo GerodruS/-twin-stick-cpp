@@ -54,32 +54,32 @@ void Game::init()
 
 void Game::update()
 {
-    for (auto i : _world.eachN<Component::Transform, Component::Velocity, Component::PlayerController>()) {
+    for (auto i : _world.each<Component::Transform, Component::Velocity, Component::PlayerController>()) {
         System::control(
                 std::get<Component::Transform&>(i),
                 std::get<Component::Velocity&>(i),
                 std::get<Component::PlayerController&>(i)
         );
     }
-    for (auto i : _world.eachN<Component::Transform, Component::Velocity>()) {
+    for (auto i : _world.each<Component::Transform, Component::Velocity>()) {
         System::move_transform(
                 std::get<Component::Transform&>(i),
                 std::get<Component::Velocity&>(i)
         );
     }
-    for (auto i : _world.eachN<Component::Transform, Component::AngularVelocity>()) {
+    for (auto i : _world.each<Component::Transform, Component::AngularVelocity>()) {
         System::rotate_transform(
                 std::get<Component::Transform&>(i),
                 std::get<Component::AngularVelocity&>(i)
         );
     }
-    for (auto i : _world.eachN<Component::Transform, Component::PlayerController>()) {
+    for (auto i : _world.each<Component::Transform, Component::PlayerController>()) {
         _spawn_bullets(
                 std::get<Component::Transform&>(i),
                 std::get<Component::PlayerController&>(i)
         );
     }
-    for (auto i : _world.eachN<Component::Transform, Component::Sprite>()) {
+    for (auto i : _world.each<Component::Transform, Component::Sprite>()) {
         System::draw_visual(
                 std::get<Component::Transform&>(i),
                 std::get<Component::Sprite&>(i)
